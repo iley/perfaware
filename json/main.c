@@ -1,24 +1,47 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "json.h"
 
-int main() {
+char *slurp(const char *filename) {
+  FILE *file = fopen(filename, "r");
+  if (file == NULL) {
+    return NULL;
+  }
+
+  fseek(file, 0, SEEK_END);
+  long length = ftell(file);
+  fseek(file, 0, SEEK_SET);
+
+  char *buffer = (char *)malloc(length + 1);
+  fread(buffer, length, 1, file);
+
+  fclose(file);
+  return buffer;
+}
+
+int main(int argc, char **argv) {
+  if (argc < 2) {
+    fprintf(stderr, "Usage: %s FILE\n", argv[0]);
+    return 1;
+  }
+
+  const char *filename = argv[1];
+
+  char *input = slurp(filename);
   json_object_t obj = json_new_dict();
-  json_dict_set(&obj, "foo", json_new_string("bar"));
-  json_dict_set(&obj, "baz", json_new_string("qux"));
 
-  json_object_t arr = json_new_array();
-  json_array_append(&arr, json_new_number(1));
-  json_array_append(&arr, json_new_number(2));
-  json_array_append(&arr, json_new_number(3));
-  json_array_append(&arr, json_new_boolean(true));
+  if (!json_parse(input, &obj)) {
+    fprintf(stderr, "Could not parse JSON file %s\n", filename);
+    goto exit;
+  }
 
-  json_dict_set(&obj, "arr", arr);
-
-  json_print(stdout, obj);
+  json_print(obj);
   printf("\n");
 
+exit:
   json_free(obj);
+  free(input);
 
   return 0;
 }

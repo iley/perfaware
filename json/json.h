@@ -57,8 +57,12 @@ void json_dict_set(json_object_t *obj, const char *key, json_object_t value);
 json_object_t json_dict_get(json_object_t obj, const char *key);
 bool json_dict_has_key(json_object_t obj, const char *key);
 int json_dict_len(json_object_t obj);
-const char *json_dict_get_key(json_object_t obj, int i);
+char *json_dict_get_key(json_object_t obj, int i);
 
-void json_print(FILE *out, json_object_t obj);
+void json_fprint(FILE *out, json_object_t obj);
+void json_print(json_object_t obj);
+
+// Returns true if parsed successfully.
+bool json_parse(const char *input, json_object_t *output);
 
 #endif // JSON_H_

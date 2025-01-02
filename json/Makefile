@@ -1,7 +1,7 @@
 CC=cc
 CFLAGS=-Wall -Wextra -std=gnu17 -DDEBUG -g
 
-main: main.o json.o stb_ds.o
+main: main.o json.o stb_ds.o stb_c_lexer.o
 	$(CC) $(CFLAGS) -o $@ $^
 
 main.o: main.c json.h
@@ -11,6 +11,9 @@ json.o: json.c json.h stb_c_lexer.h stb_ds.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 stb_ds.o: stb_ds.c stb_ds.h
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+stb_c_lexer.o: stb_c_lexer.c stb_c_lexer.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
