@@ -92,7 +92,7 @@ void json_free(json_object_t obj) {
 
     // First, copy all keys into a buffer.
     int len = shlen(obj.val.dict);
-    char** keys = (char**)malloc(sizeof(char*) * len);
+    char **keys = (char **)malloc(sizeof(char *) * len);
     for (int i = 0; i < len; i++) {
       keys[i] = obj.val.dict[i].key;
     }
@@ -113,6 +113,13 @@ void json_free(json_object_t obj) {
 }
 
 int json_get_type(json_object_t obj) { return obj.typ; }
+
+bool json_is_number(json_object_t obj) { return obj.typ == JSON_NUMBER; }
+bool json_is_string(json_object_t obj) { return obj.typ == JSON_STRING; }
+bool json_is_boolean(json_object_t obj) { return obj.typ == JSON_BOOLEAN; }
+bool json_is_dict(json_object_t obj) { return obj.typ == JSON_DICT; }
+bool json_is_array(json_object_t obj) { return obj.typ == JSON_ARRAY; }
+bool json_is_null(json_object_t obj) { return obj.typ == JSON_NULL; }
 
 double json_get_number(json_object_t obj) {
   assert(obj.typ == JSON_NUMBER);
@@ -153,7 +160,7 @@ json_object_t json_array_get(json_object_t obj, int index) {
 
 void json_dict_set(json_object_t *obj, const char *key, json_object_t value) {
   assert(obj->typ == JSON_DICT);
-  char* key_copy = strdup(key);
+  char *key_copy = strdup(key);
   shput(obj->val.dict, key_copy, value);
 }
 
@@ -232,7 +239,7 @@ bool json_parse_dict(stb_lexer *lexer, json_object_t *output);
 
 bool json_parse_value(stb_lexer *lexer, json_object_t *output) {
   if (!stb_c_lexer_get_token(lexer)) {
-    fprintf(stderr, "JSON ERROR: Unexpected EOF\n");
+    fprintf(stderr, "json error: Unexpected EOF\n");
     return false;
   }
 
@@ -245,12 +252,16 @@ bool json_parse_value(stb_lexer *lexer, json_object_t *output) {
     // we assume this is an unary minus in front of a number
 
     if (!stb_c_lexer_get_token(lexer)) {
-      fprintf(stderr, "JSON ERROR: Unexpected EOF when parsing a negative number\n");
+      fprintf(stderr,
+              "json error: Unexpected EOF when parsing a negative number\n");
       return false;
     }
 
     if (lexer->token != CLEX_floatlit && lexer->token != CLEX_intlit) {
-      fprintf(stderr, "JSON ERROR: Unexpected token when parsing a negative number: %ld\n", lexer->token);
+      fprintf(
+          stderr,
+          "json error: Unexpected token when parsing a negative number: %ld\n",
+          lexer->token);
       return false;
     }
 
@@ -279,7 +290,7 @@ bool json_parse_value(stb_lexer *lexer, json_object_t *output) {
       return true;
     }
 
-    fprintf(stderr, "JSON ERROR: Unexpected identifier \"%s\"\n",
+    fprintf(stderr, "json error: Unexpected identifier \"%s\"\n",
             lexer->string);
     return false;
   }
@@ -308,7 +319,7 @@ bool json_parse_array(stb_lexer *lexer, json_object_t *output) {
 
     if (!stb_c_lexer_get_token(lexer)) {
       fprintf(stderr,
-              "JSON ERROR: Unexpected EOF when parsing array seprator\n");
+              "json error: Unexpected EOF when parsing array seprator\n");
       return false;
     }
 
@@ -322,7 +333,7 @@ bool json_parse_array(stb_lexer *lexer, json_object_t *output) {
     }
 
     fprintf(stderr,
-            "JSON ERROR: Unexpected token when parsing array "
+            "json error: Unexpected token when parsing array "
             "separator: %ld\n",
             lexer->token);
     return false;
@@ -337,7 +348,7 @@ bool json_parse_dict(stb_lexer *lexer, json_object_t *output) {
 
   while (true) {
     if (!stb_c_lexer_get_token(lexer)) {
-      fprintf(stderr, "JSON ERROR: Unexpected EOF when parsing dict key\n");
+      fprintf(stderr, "json error: Unexpected EOF when parsing dict key\n");
       return false;
     }
 
@@ -348,7 +359,7 @@ bool json_parse_dict(stb_lexer *lexer, json_object_t *output) {
 
     if (lexer->token != CLEX_dqstring && lexer->token != CLEX_sqstring) {
       fprintf(stderr,
-              "JSON ERROR: Unexpected token when parsing dict key: %ld\n",
+              "json error: Unexpected token when parsing dict key: %ld\n",
               lexer->token);
       return false;
     }
@@ -358,7 +369,7 @@ bool json_parse_dict(stb_lexer *lexer, json_object_t *output) {
 
     if (!stb_c_lexer_get_token(lexer)) {
       fprintf(stderr,
-              "JSON ERROR: Unexpected EOF when looking for : in a dict\n");
+              "json error: Unexpected EOF when looking for : in a dict\n");
       free(key);
       return false;
     }
@@ -366,7 +377,7 @@ bool json_parse_dict(stb_lexer *lexer, json_object_t *output) {
     if (lexer->token != ':') {
       fprintf(
           stderr,
-          "JSON ERROR: Unexpected token when looking for : in a dict: %ld\n",
+          "json error: Unexpected token when looking for : in a dict: %ld\n",
           lexer->token);
       free(key);
       return false;
@@ -383,7 +394,7 @@ bool json_parse_dict(stb_lexer *lexer, json_object_t *output) {
 
     if (!stb_c_lexer_get_token(lexer)) {
       fprintf(stderr,
-              "JSON ERROR: Unexpected EOF when looking for , or } in a dict\n");
+              "json error: Unexpected EOF when looking for , or } in a dict\n");
       return false;
     }
 
@@ -397,7 +408,7 @@ bool json_parse_dict(stb_lexer *lexer, json_object_t *output) {
 
     fprintf(
         stderr,
-        "JSON ERROR: Unexpected token when looking for dict separator: %ld\n",
+        "json error: Unexpected token when looking for dict separator: %ld\n",
         lexer->token);
     return false;
   }
@@ -409,7 +420,7 @@ bool json_parse_dict(stb_lexer *lexer, json_object_t *output) {
 bool json_parse(const char *input, json_object_t *output) {
   char *string_store = (char *)malloc(STRING_STORE_LEN);
   if (string_store == NULL) {
-    fprintf(stderr, "JSON ERROR: Could not allocate memory for string store\n");
+    fprintf(stderr, "json error: Could not allocate memory for string store\n");
     return false;
   }
 

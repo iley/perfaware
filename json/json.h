@@ -43,6 +43,12 @@ json_object_t json_new_null();
 void json_free(json_object_t obj);
 
 int json_get_type(json_object_t obj);
+bool json_is_number(json_object_t obj);
+bool json_is_string(json_object_t obj);
+bool json_is_boolean(json_object_t obj);
+bool json_is_dict(json_object_t obj);
+bool json_is_array(json_object_t obj);
+bool json_is_null(json_object_t obj);
 
 double json_get_number(json_object_t obj);
 char *json_get_string(json_object_t obj);
