@@ -16,11 +16,16 @@ main.c: json.h harvestine.h
 json.h: stb_ds.h
 json.c: json_lexer.h
 
-test_lexer: test_lexer.o json_lexer.o
+TESTS=test_lexer test_json
+
+$(TESTS): %: %.c $(filter-out main.o, $(OBJS))
 	$(CC) $(CFLAGS) -o $@ $^
 
-test: test_lexer
+test: $(TESTS)
 	./test_lexer
+	./test_json
 
 clean:
-	rm -f main $(OBJS)
+	rm -f main $(OBJS) $(TESTS)
+
+.PHONY: clean test always

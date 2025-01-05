@@ -36,9 +36,9 @@ typedef struct json_dict_entry_t {
 json_object_t json_new_number(double value);
 json_object_t json_new_string(const char *value);
 json_object_t json_new_boolean(bool value);
-json_object_t json_new_dict();
-json_object_t json_new_array();
-json_object_t json_new_null();
+json_object_t json_new_dict(void);
+json_object_t json_new_array(void);
+json_object_t json_new_null(void);
 
 void json_free(json_object_t obj);
 

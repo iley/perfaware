@@ -40,7 +40,8 @@ static char unescape(char ch) {
 }
 
 static bool is_float_char(char ch) {
-  return ('0' <= ch && ch <= '9') || ch == '-' || ch == '.' || ch == 'e';
+  return ('0' <= ch && ch <= '9') || ch == '-' || ch == '.' || ch == 'e' ||
+         ch == '+';
 }
 
 bool json_lexer_get_token(json_lexer_t *lexer) {

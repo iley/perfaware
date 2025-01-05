@@ -6,6 +6,8 @@
 
 #include "json_lexer.h"
 
+// JSON data model.
+
 json_object_t json_new_number(double value) {
   json_object_t obj = {
       .typ = JSON_NUMBER,
@@ -40,7 +42,7 @@ json_object_t json_new_boolean(bool value) {
   return obj;
 }
 
-json_object_t json_new_dict() {
+json_object_t json_new_dict(void) {
   json_object_t obj = {
       .typ = JSON_DICT,
       .val =
@@ -51,7 +53,7 @@ json_object_t json_new_dict() {
   return obj;
 }
 
-json_object_t json_new_array() {
+json_object_t json_new_array(void) {
   json_object_t obj = {
       .typ = JSON_ARRAY,
       .val =
@@ -62,7 +64,7 @@ json_object_t json_new_array() {
   return obj;
 };
 
-json_object_t json_new_null() {
+json_object_t json_new_null(void) {
   json_object_t obj = {
       .typ = JSON_NULL,
   };
@@ -187,10 +189,12 @@ char *json_dict_get_key(json_object_t obj, int i) {
   return obj.val.dict[i].key;
 }
 
+// JSON printing
+
 void json_fprint(FILE *out, json_object_t obj) {
   switch (obj.typ) {
   case JSON_NUMBER:
-    fprintf(out, "%lf", json_get_number(obj));
+    fprintf(out, "%g", json_get_number(obj));
     break;
   case JSON_STRING:
     fprintf(out, "\"%s\"", json_get_string(obj));
@@ -203,6 +207,9 @@ void json_fprint(FILE *out, json_object_t obj) {
       fprintf(out, "false");
     }
   } break;
+  case JSON_NULL:
+    fprintf(out, "null");
+    break;
   case JSON_ARRAY: {
     fprintf(out, "[");
     int len = json_array_len(obj);
@@ -232,15 +239,12 @@ void json_fprint(FILE *out, json_object_t obj) {
 
 void json_print(json_object_t obj) { json_fprint(stdout, obj); }
 
+// JSON parsing.
+
 bool json_parse_array(json_lexer_t *lexer, json_object_t *output);
 bool json_parse_dict(json_lexer_t *lexer, json_object_t *output);
 
-bool json_parse_value(json_lexer_t *lexer, json_object_t *output) {
-  if (!json_lexer_get_token(lexer)) {
-    fprintf(stderr, "json error: Unexpected EOF\n");
-    return false;
-  }
-
+bool json_parse_value_cont(json_lexer_t *lexer, json_object_t *output) {
   if (lexer->token == JSON_TOK_NUMBER) {
     *output = json_new_number(lexer->numeric_value);
     return true;
@@ -277,12 +281,41 @@ bool json_parse_value(json_lexer_t *lexer, json_object_t *output) {
   return true;
 }
 
+bool json_parse_value(json_lexer_t *lexer, json_object_t *output) {
+  if (!json_lexer_get_token(lexer)) {
+    fprintf(stderr, "json error: Unexpected EOF\n");
+    return false;
+  }
+
+  return json_parse_value_cont(lexer, output);
+}
+
+bool json_parse_value_in_array(json_lexer_t *lexer, json_object_t *output,
+                               bool *is_array_end) {
+  *is_array_end = false;
+  if (!json_lexer_get_token(lexer)) {
+    fprintf(stderr, "json error: Unexpected EOF\n");
+    return false;
+  }
+
+  if (lexer->token == ']') {
+    *is_array_end = true;
+    return false;
+  }
+
+  return json_parse_value_cont(lexer, output);
+}
+
 bool json_parse_array(json_lexer_t *lexer, json_object_t *output) {
   json_object_t array = json_new_array();
 
   while (true) {
     json_object_t elem;
-    if (!json_parse_value(lexer, &elem)) {
+    bool is_array_end = false;
+    if (!json_parse_value_in_array(lexer, &elem, &is_array_end)) {
+      if (is_array_end) {
+        break;
+      }
       return false;
     }
 
