@@ -244,6 +244,9 @@ void json_print(json_object_t obj) { json_fprint(stdout, obj); }
 bool json_parse_array(json_lexer_t *lexer, json_object_t *output);
 bool json_parse_dict(json_lexer_t *lexer, json_object_t *output);
 
+// This is a hack for handling empty arrays [].
+// We split json_parse_value() into two parts so we can have
+// json_parse_value_in_array().
 bool json_parse_value_cont(json_lexer_t *lexer, json_object_t *output) {
   if (lexer->token == JSON_TOK_NUMBER) {
     *output = json_new_number(lexer->numeric_value);
