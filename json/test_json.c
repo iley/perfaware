@@ -20,6 +20,7 @@ static void test_roundtrip(const char *input) {
 
   char *output = (char *)malloc(len + 1);
   fread(output, 1, len, tf);
+  output[len] = '\0';
   fclose(tf);
 
   if (strcmp(input, output) != 0) {
