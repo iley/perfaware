@@ -19,7 +19,7 @@ json.c: json_lexer.h
 TESTS=test_lexer test_json
 
 $(TESTS): %: %.c $(filter-out main.o, $(OBJS))
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 test: $(TESTS)
 	./test_lexer
