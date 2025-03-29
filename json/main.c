@@ -4,7 +4,7 @@
 
 #include "harvestine.h"
 #include "json.h"
-#include "timer.h"
+#include "stopwatch.h"
 
 typedef struct {
   double x0;
@@ -102,30 +102,30 @@ int main(int argc, char **argv) {
     return 1;
   }
 
-  timer_t timer;
-  timer_init(&timer);
+  stopwatch_t stopwatch;
+  stopwatch_init(&stopwatch);
 
   coordinate_pair_t *pairs;
   int npairs;
 
-  timer_start(&timer);
+  stopwatch_start(&stopwatch);
   const char *filename = argv[1];
   char *input = slurp(filename);
-  uint64_t ns = timer_end(&timer);
+  uint64_t ns = stopwatch_end(&stopwatch);
   printf("1. Read JSON from disk. %lf ms\n", ns/1000000.0);
 
-  timer_start(&timer);
+  stopwatch_start(&stopwatch);
   if (!load_input(input, &pairs, &npairs)) {
     fprintf(stderr, "could not load input from file %s\n", filename);
     return 1;
   }
-  ns = timer_end(&timer);
+  ns = stopwatch_end(&stopwatch);
 
   printf("2. Parse JSON. %lf ms\n", ns/1000000.0);
 
-  timer_start(&timer);
+  stopwatch_start(&stopwatch);
   double answer = average_harvestine(pairs, npairs);
-  ns = timer_end(&timer);
+  ns = stopwatch_end(&stopwatch);
 
   printf("3. Calculate Harvestine. %lf ms\n", ns/1000000.0);
   printf("Answer: %lf\n", answer);
