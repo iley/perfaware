@@ -4,6 +4,7 @@
 
 #include "harvestine.h"
 #include "json.h"
+#include "timer.h"
 
 typedef struct {
   double x0;
@@ -29,14 +30,13 @@ char *slurp(const char *filename) {
   return buffer;
 }
 
-bool load_input(const char *filename, coordinate_pair_t **out_pairs,
+bool load_input(const char *input, coordinate_pair_t **out_pairs,
                 int *out_pairs_len) {
   bool success = false;
-  char *input = slurp(filename);
   json_object_t obj = json_new_dict();
 
   if (!json_parse(input, &obj)) {
-    fprintf(stderr, "Could not parse JSON file %s\n", filename);
+    fprintf(stderr, "Could not parse JSON input\n");
     goto exit;
   }
 
@@ -84,7 +84,6 @@ bool load_input(const char *filename, coordinate_pair_t **out_pairs,
 
 exit:
   json_free(obj);
-  free(input);
   return success;
 }
 
@@ -103,21 +102,36 @@ int main(int argc, char **argv) {
     return 1;
   }
 
+  timer_t timer;
+  timer_init(&timer);
+
   coordinate_pair_t *pairs;
   int npairs;
 
+  timer_start(&timer);
   const char *filename = argv[1];
-  if (!load_input(filename, &pairs, &npairs)) {
+  char *input = slurp(filename);
+  uint64_t ns = timer_end(&timer);
+  printf("1. Read JSON from disk. %lf ms\n", ns/1000000.0);
+
+  timer_start(&timer);
+  if (!load_input(input, &pairs, &npairs)) {
     fprintf(stderr, "could not load input from file %s\n", filename);
     return 1;
   }
+  ns = timer_end(&timer);
 
-  printf("loaded %d pairs\n", npairs);
+  printf("2. Parse JSON. %lf ms\n", ns/1000000.0);
 
+  timer_start(&timer);
   double answer = average_harvestine(pairs, npairs);
-  printf("answer: %lf\n", answer);
+  ns = timer_end(&timer);
+
+  printf("3. Calculate Harvestine. %lf ms\n", ns/1000000.0);
+  printf("Answer: %lf\n", answer);
 
   free(pairs);
+  free(input);
 
   return 0;
 }

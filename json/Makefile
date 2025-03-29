@@ -2,7 +2,7 @@ CC=cc
 CFLAGS=-Wall -Wextra -std=gnu17 -g
 LIBS=-lm
 
-OBJS=stb_ds.o json.o main.o harvestine.o json_lexer.o
+OBJS=stb_ds.o json.o main.o harvestine.o json_lexer.o timer.o
 
 main: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
