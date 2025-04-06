@@ -352,11 +352,12 @@ bool json_parse_array(json_lexer_t *lexer, json_object_t *output) {
 
 bool json_parse_dict(json_lexer_t *lexer, json_object_t *output) {
   json_object_t dict = json_new_dict();
+  char *key = NULL;
 
   while (true) {
     if (!json_lexer_get_token(lexer)) {
       fprintf(stderr, "json error: Unexpected EOF when parsing dict key\n");
-      return false;
+      goto cleanup;
     }
 
     if (lexer->token == '}') {
@@ -368,40 +369,37 @@ bool json_parse_dict(json_lexer_t *lexer, json_object_t *output) {
       fprintf(stderr,
               "json error: Unexpected token when parsing dict key: %d\n",
               lexer->token);
-      return false;
+      goto cleanup;
     }
 
-    // Careful! We need to make sure we deallocate this key.
-    char *key = strdup(lexer->string_value);
+    key = strdup(lexer->string_value);
 
     if (!json_lexer_get_token(lexer)) {
       fprintf(stderr,
               "json error: Unexpected EOF when looking for : in a dict\n");
-      free(key);
-      return false;
+      goto cleanup;
     }
 
     if (lexer->token != ':') {
       fprintf(stderr,
               "json error: Unexpected token when looking for : in a dict: %d\n",
               lexer->token);
-      free(key);
-      return false;
+      goto cleanup;
     }
 
     json_object_t value;
     if (!json_parse_value(lexer, &value)) {
-      free(key);
-      return false;
+      goto cleanup;
     }
 
     json_dict_set(&dict, key, value);
     free(key);
+    key = NULL;
 
     if (!json_lexer_get_token(lexer)) {
       fprintf(stderr,
               "json error: Unexpected EOF when looking for , or } in a dict\n");
-      return false;
+      goto cleanup;
     }
 
     if (lexer->token == '}') {
@@ -416,11 +414,17 @@ bool json_parse_dict(json_lexer_t *lexer, json_object_t *output) {
         stderr,
         "json error: Unexpected token when looking for dict separator: %d\n",
         lexer->token);
-    return false;
+    goto cleanup;
   }
 
   *output = dict;
   return true;
+
+cleanup:
+  if (key != NULL) {
+    free(key);
+  }
+  return false;
 }
 
 bool json_parse(const char *input, json_object_t *output) {
