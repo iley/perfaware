@@ -84,12 +84,20 @@ void json_free(json_object_t obj) {
   case JSON_BOOLEAN:
     // noop
     break;
-  case JSON_ARRAY:
+  case JSON_ARRAY: {
+    for (int i = 0; i < arrlen(obj.val.array); i++) {
+      json_free(obj.val.array[i]);
+    }
+
     arrfree(obj.val.array);
     break;
+  }
   case JSON_DICT: {
-    // We own the key strings, so we need to carefully deallocate them.
+    for (int i = 0; i < shlen(obj.val.dict); i++) {
+      json_free(obj.val.dict[i].value);
+    }
 
+    // We own the key strings, so we need to carefully deallocate them.
     // First, copy all keys into a buffer.
     int len = shlen(obj.val.dict);
     char **keys = (char **)malloc(sizeof(char *) * len);
@@ -107,8 +115,8 @@ void json_free(json_object_t obj) {
 
     // Finally, get rid of the buffer we just allocated.
     free(keys);
-
-  } break;
+    break;
+  }
   }
 }
 
@@ -430,6 +438,7 @@ cleanup:
 bool json_parse(const char *input, json_object_t *output) {
   json_lexer_t lexer;
   json_lexer_init(&lexer, input);
-
-  return json_parse_value(&lexer, output);
+  bool result = json_parse_value(&lexer, output);
+  json_lexer_free(&lexer);
+  return result;
 }

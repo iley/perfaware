@@ -14,6 +14,7 @@ static void test_roundtrip(const char *input) {
 
   FILE *tf = tmpfile();
   json_fprint(tf, json);
+  json_free(json); // we no longer need the json object after this point
 
   int len = ftell(tf);
   fseek(tf, SEEK_SET, 0);
