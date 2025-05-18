@@ -94,6 +94,7 @@ bool json_lexer_get_token(json_lexer_t *lexer) {
       lexer->input++;
       ch = lexer->input[0];
     }
+    lexer->string_value[len] = '\0';
     lexer->numeric_value = atof(lexer->string_value);
   } else if (strncmp(lexer->input, "true", 4) == 0) {
     lexer->token = JSON_TOK_TRUE;
