@@ -21,7 +21,7 @@ $(TESTS): %: %.c $(filter-out main.o, $(OBJS))
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
 test: $(TESTS)
-	@for t in $^; do ./$$t; done
+	@for t in $^; do (echo Running $$t; ./$$t); done
 
 clean:
 	rm -f main $(OBJS) $(TESTS)
