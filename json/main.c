@@ -33,7 +33,7 @@ char *slurp(const char *filename) {
 bool load_input(const char *input, coordinate_pair_t **out_pairs,
                 int *out_pairs_len) {
   bool success = false;
-  json_object_t obj = json_new_dict();
+  json_object_t obj = json_new_null();
 
   if (!json_parse(input, &obj)) {
     fprintf(stderr, "Could not parse JSON input\n");
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
   const char *filename = argv[1];
   char *input = slurp(filename);
   uint64_t ns = stopwatch_end(&stopwatch);
-  printf("1. Read JSON from disk. %lf ms\n", ns/1000000.0);
+  printf("1. Read JSON from disk. %lf ms\n", ns / 1000000.0);
 
   stopwatch_start(&stopwatch);
   if (!load_input(input, &pairs, &npairs)) {
@@ -121,13 +121,13 @@ int main(int argc, char **argv) {
   }
   ns = stopwatch_end(&stopwatch);
 
-  printf("2. Parse JSON. %lf ms\n", ns/1000000.0);
+  printf("2. Parse JSON. %lf ms\n", ns / 1000000.0);
 
   stopwatch_start(&stopwatch);
   double answer = average_harvestine(pairs, npairs);
   ns = stopwatch_end(&stopwatch);
 
-  printf("3. Calculate Harvestine. %lf ms\n", ns/1000000.0);
+  printf("3. Calculate Harvestine. %lf ms\n", ns / 1000000.0);
   printf("Answer: %lf\n", answer);
 
   free(pairs);
