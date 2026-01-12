@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -111,6 +112,8 @@ int main(int argc, char **argv) {
   stopwatch_start(&stopwatch);
   const char *filename = argv[1];
   char *input = slurp(filename);
+  assert(input);
+
   uint64_t ns = stopwatch_end(&stopwatch);
   printf("1. Read JSON from disk. %lf ms\n", ns / 1000000.0);
 

@@ -5,3 +5,4 @@ main
 *.f64
 test_json
 test_lexer
+perf.data
